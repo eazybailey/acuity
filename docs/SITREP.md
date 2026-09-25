@@ -1,61 +1,65 @@
-updated: 2026-09-22T23:05Z
+updated: 2026-09-25T10:10Z
+checked: 2026-09-25T10:10Z
 state: waiting-on-eazy
-next: Start the unbranded PWA skeleton in this repo and get Browne to lock the four [=R] deck facts this week.
+next: QA the skeleton end-to-end on a Muswell Hill Road preview once the two preview env vars are set; meanwhile scaffold magic-link login.
 
 ## Big picture
-Client: Equals Results (=Results), Browne Bailey's 9-studio, 35-trainer North London PT group selling the 30-minute pre-planned session. EBA runs two workstreams. Product: PWA at app.equalsresults.co.uk on the Acuity API, dashboard mirroring the Power BI report, later app-store wrapped; WhatsApp AI agent; design system and trade-mark filing added 17–21 Sept; agenda says "PWA plus dashboard by month end for £1000". Growth: Mark Warner model taken to new partners, first Riviera Travel (one ship, 2027), widened 18 Sept into a B2B strategy (3–5 partners by 2028). Now: Riviera deck built, awaiting Browne's fact-lock; product gate is the unbranded skeleton after Gate 0 passed.
+Equals Results (=Results) is Browne Bailey's North London PT group: 9 studios, 35 trainers, 30-minute pre-planned sessions. EBA runs two workstreams. Product: a fast PWA on the Acuity API (later store-wrapped), a dashboard built from the Acuity API, and a WhatsApp agent concept. Growth: the Mark Warner model taken to partners, Riviera Travel first; deck held until Browne confirms whether it went. The PWA is an internal target the client does not need to see yet, not a month-end deadline. The trade mark is Eazy's (EBA files once Browne confirms class and applicant).
 
 ## Build
-- Gate 0 test app: Next.js 15.5.9, `lib/acuity.ts` plus one secret-gated API route (mint/balance/book/cancel). README: keep the Vercel project and lib as the real backend.
-- Last commit 6 Sept (PR #1, Vercel CVE fix). No open PRs, tests or CI. Vercel state unverifiable from repo.
-- Gate 0 (Muswell Hill Road): minted certificates behave like purchased ones. Packages are minutes-based.
-- Constraint: 9 entities, 9 Stripe, 9 Acuity accounts; keep subscriptions; trainers keep Acuity.
-- Not in code: skeleton, dashboard, WhatsApp agent, design system. Nothing broken.
+- Next.js 15.5.9 on Vercel. Branch `claude/wizardly-volta-03o5or`, not merged to main. Deploy/preview state can't be checked from the repo.
+- **Skeleton, now in code**: login → my studio → my minutes (home) → book → buy. Per-studio Acuity keys (`ACUITY_*_<CODE>`); only MH may be written to, and only `POST /appointments`, enforced before any request. Buying is a link out to Acuity's hosted checkout. Login is a signed-cookie stand-in with an access code, refused on production.
+- Gate 0 page moved to `/gate0`; its API is unchanged.
+- 34 unit tests, typecheck and build pass. Never run against real Acuity: there are no keys in this environment.
+- Not built: real auth, service worker, icons, dashboard, WhatsApp agent, design.
 
 ## Done since last sitrep
-- 22 Sept: EBA agenda connected to the Project; first SITREP committed.
-- 21 Sept: week scoped. 18 Sept: B2B strategy doc. 17 Sept: £1000 pricing. Mid Sept: Riviera deck built.
+- 25 Sept: agent roster, sitrep skill, CLAUDE.md, BRIEF copied into the repo; .gitignore added.
+- 25 Sept: skeleton built and reviewed (approved); two findings fixed (certificates must match the client's email exactly; production check fails closed).
+- HQ relay applied (see Decisions).
 
 ## In flight
-- Skeleton, design system, trade-mark filing: none started.
-- Riviera forwarding unverified; Browne's pre-flight checklist untouched.
-- B2B first-90-days items not started; WhatsApp agent concept only.
+- Nothing running. Next: QA on an MH preview, then real login.
 
 ## Needs Eazy
-- £1000 month-end scope agreed with Browne? Recommend confirm in writing, skeleton Sept / dashboard Oct. Default: internal target.
-- Trade-mark marks/classes? Recommend word + logo series, class 41 minimum, after clearance. Default 41/9/16. Fee £205 + £60/class.
-- Dashboard from Acuity API or Obadia's Power BI? Default: API.
-- Deck's visual language as design system? Default: yes.
-- Has the Riviera deck gone? Default: hold, ask Browne.
-- Sessions 20,000+ or 50,000/yr (default 20,000+); MW origin story (default deck); is the "MD" Matt Luscombe (default keep "MD")?
+- **Preview env vars.** Recommend setting `SESSION_SECRET` and `SKELETON_ACCESS_CODE` on Vercel *Preview* only, and confirming `ACUITY_USER_ID`/`ACUITY_API_KEY` are Muswell Hill Road's (writes go wherever those keys point). Default: skeleton stays untested against Acuity.
+- **Real login.** Recommend Supabase Auth email magic link (Supabase Pro already in the BRIEF), with the email matched to Acuity clients. Default: build that next, on previews.
+- **Other 8 studios.** Recommend adding their keys only when you decide read access is fine; the app is read-only for them anyway. Default: not connected.
 
 ## Risks
-- Eight days to month end beside FU, EC, Goldhawk; skeleton is the realistic output.
-- No single written product scope with Browne; client-facing numbers disagree across documents.
-- DIY trade mark without clearance; series window closes ~spring 2027.
-- "Equals Results" not a Companies House name.
-- 9-account fan-out and Stripe-per-studio unproven; dashboard reference competitor-owned.
-- Riviera recipient unknown; Scylla AG crews the ships.
-- No BRIEF yet.
+- Checkout link format (`catalog.php?action=addCart…`) not confirmed; check it against the MH admin's "Direct link".
+- Nothing in code checks that MH keys belong to MH; the Gate 0 API can still cancel bookings and delete certificates on that account. Recommend leaving `GATE0_SECRET` unset on app previews.
+- If Acuity's purchased certificates carry no email, minutes will show 0. Verify on MH.
+- Access-code login lets anyone with the code act as any email. Previews only.
+- 9-account fan-out, Acuity rate limits and cross-studio identity unproven.
+- Trade mark filed without clearance; "Equals Results" isn't a Companies House name.
 
 ## Decisions
-- 2026-09-21 · EBA files the trade mark itself (~4 hrs + fee) · cheap, urgent, gates pitches.
+- 2026-09-25 · Buying links out to Acuity's hosted checkout; the app never takes payment · BRIEF money rule.
+- 2026-09-25 · Writes allowed only on MH, only to create bookings, enforced in code · BRIEF test rule.
+- 2026-09-25 · Signed-cookie login with an access code on previews only, until real auth · no email/auth decision yet.
+- 2026-09-25 · Dashboard from Acuity API; Riviera deck held until Browne confirms; deck language becomes the design system; deck facts 20,000+ sessions/yr, MW origin as in deck, keep "MD" · CoS defaults after 48h.
+- 2026-09-23 · PWA is an internal target, all functionality bare-bones first, design later · Eazy.
+- 2026-09-23 · Trade mark: EBA files a series of three (Equals Results / =Results / = Results), class 41 + 9, 16 recommended; Browne confirms class and applicant Ltd · Eazy.
+- 2026-09-23 · Cash rule: receivables live in the EBA sitrep only; money figures removed from this doc · org rule.
+- 2026-09-23 · Sitrep header is four lines (updated/checked/state/next) · /sitrep v3.
+- 2026-09-21 · EBA files the trade mark itself · cheap, urgent, gates pitches.
 - 2026-09-21 · Create a =Results design system · before branded screens.
 - 2026-09-21 · Next PWA step: unbranded skeleton, problem-solving only · flows before design.
 - 2026-09-18 · Expand beyond cruise to any organisation with a gym; 3–5 partners in 24 months · Browne's brief.
-- 2026-09-18 · Certify-first, place selectively; three plays · ≈75% vs ≈33% contribution; adoption unverified.
-- 2026-09-17 · PWA incl. dashboard by end September, £1000; WhatsApp agent a deliverable · agenda; Browne unverified.
+- 2026-09-18 · Certify-first, place selectively; three plays · ≈75% vs ≈33% contribution.
+- 2026-09-17 · PWA incl. dashboard; WhatsApp agent a deliverable · agenda.
 - 2026-09-16 · ER is EBA's "Wellness" case study · portfolio framing.
-- 2026-09-14 · Deck is an 8-slide appetite-whetter; ask is one 30-minute call · listening exercise.
-- 2026-09-14 · Deck: since 2007, 9 studios, 35 trainers, 20,000+ sessions/yr · understates; needs confirmation.
-- 2026-09-14 · Doodle language, lime ~#7DF94B, rounded sans, wordmark from logo file · matches existing decks.
+- 2026-09-14 · Deck: 8-slide appetite-whetter; ask is one 30-minute call · listening exercise.
+- 2026-09-14 · Deck: since 2007, 9 studios, 35 trainers, 20,000+ sessions/yr · needs confirmation.
+- 2026-09-14 · Doodle language, lime ~#7DF94B, rounded sans · matches existing decks.
 - 2026-09-14 · PWA "fully loaded with dashboard mirror" · agenda.
 - 2026-09-11 · PWA at app.equalsresults.co.uk; dashboard mirrors Power BI; WhatsApp a concept · agenda.
 - 2026-09-11 · Riviera first target, via Browne's 10-year client · warm route.
 - 2026-09-11 · Pilot: one Radiance-class ship, 2027, one trainer; Route A · lowest friction.
-- 2026-09 · PWA first on Acuity API, then wrap; "feels super fast" · Eazy's plan.
-- 2026-09 · Gate 0 passed; minted certificates are the design; this repo becomes the backend · behave identically.
+- 2026-09 · PWA first on Acuity API, then wrap · Eazy's plan.
+- 2026-09 · Gate 0 passed; minted certificates are the design; this repo is the backend.
 - 2026-09 · Keep existing Acuity subscriptions · studios want them.
 - 2026-09-04 · Review existing app; research Acuity API · workstream start.
-- 2026-08-23 · Licence, don't franchise; file UK marks (41/9/16, series) first; IP holding company · method not ownable.
-- 2026-08-13 · Pilot residency then format licence; OneSpaWorld as channel · OSW >90% share.
+- 2026-08-23 · Licence, don't franchise; file UK marks first; IP holding company.
+- 2026-08-13 · Pilot residency then format licence; OneSpaWorld as channel.
