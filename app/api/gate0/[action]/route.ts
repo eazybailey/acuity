@@ -6,6 +6,7 @@ import {
   remainingSessions,
   type Certificate,
 } from "@/lib/acuity";
+import { londonOffsetMinutes } from "@/lib/time";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,22 +25,6 @@ function num(b: Body, k: string): number | undefined {
   if (typeof v === "number") return v;
   if (typeof v === "string" && v.trim() && !Number.isNaN(Number(v))) return Number(v);
   return undefined;
-}
-
-function londonOffsetMinutes(at: Date): number {
-  // Europe/London offset in minutes for a given instant (0 in winter, 60 in BST).
-  const fmt = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/London",
-    hour12: false,
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-  });
-  const parts = Object.fromEntries(fmt.formatToParts(at).map((p) => [p.type, p.value]));
-  const asUTC = Date.UTC(
-    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
-    Number(parts.hour) % 24, Number(parts.minute), Number(parts.second)
-  );
-  return Math.round((asUTC - at.getTime()) / 60_000);
 }
 
 // Tomorrow at HH:00 London time, as an Acuity datetime string.

@@ -1,3 +1,22 @@
+# Skeleton (unbranded PWA)
+
+Flow: `/login` → `/studio` (my studio) → `/` (my minutes) → `/book` → `/buy`. Plain HTML, no design, server components and server actions; the only client JS refreshes minutes when the app regains focus.
+
+- **Studios** (`lib/studios.ts`): AP, CH, HB, HGS, LL, MH, PR, SG, WMH, each with its own Acuity keys. Only MH (Muswell Hill Road) can be written to: `studioClient(code).write()` throws before any request for any other studio, and even on MH it only allows `POST /appointments`. Certificates and subscriptions are never changed.
+- **My studio**: read-only `GET /clients?search=` on every connected studio, exact email match. One match skips straight through.
+- **My minutes**: sum of `remainingMinutes` on unexpired certificates, upcoming appointments, and the next three free times for the client's usual session (one tap to confirm).
+- **Book**: types the client's certificates cover → day → time → confirm → `POST /appointments` with the certificate, not admin mode, `noEmail=true` while the studio's `notify` is false. Disabled on read-only studios.
+- **Buy**: `GET /products`, each linking to Acuity's hosted checkout (the studio's own Stripe). The link format in `checkoutUrl()` (`lib/packages.ts`) is **unverified**; check it against a "Direct link" from the MH admin.
+- **Login is a preview-only stand-in** (`lib/session.ts`): email + shared access code, HMAC-signed httpOnly cookie, 7-day expiry. Anyone with the code can sign in as any email, so it refuses to run when `VERCEL_ENV=production`.
+
+Env vars: see `.env.example` (`SESSION_SECRET`, `SKELETON_ACCESS_CODE`, `ACUITY_USER_ID_<CODE>` / `ACUITY_API_KEY_<CODE>`; MH falls back to `ACUITY_USER_ID` / `ACUITY_API_KEY`).
+
+Scripts: `npm test` (vitest, pure logic with fetch stubbed), `npm run typecheck`, `npm run build`.
+
+Not built yet: real identity verification (magic link / Supabase Auth), cancelling or moving bookings, service worker / offline, icons and branding, multi-studio switching beyond the studio picker, rate-limit handling, confirmation emails (`notify`).
+
+The Gate 0 page now lives at `/gate0`.
+
 # Gate 0 — Acuity certificate test
 
 A one-page tool that answers: **do package certificates minted via the Acuity API behave exactly like packages bought through Acuity's own checkout?**
