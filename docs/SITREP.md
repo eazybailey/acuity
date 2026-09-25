@@ -1,48 +1,42 @@
 updated: 2026-09-25T10:10Z
 checked: 2026-09-25T10:10Z
 state: waiting-on-eazy
-next: QA the skeleton end-to-end on a Muswell Hill Road preview once the two preview env vars are set; meanwhile scaffold magic-link login.
+next: QA the skeleton on a Muswell Hill Road preview once preview env vars are set; meanwhile scaffold magic-link login.
 
 ## Big picture
-Equals Results (=Results) is Browne Bailey's North London PT group: 9 studios, 35 trainers, 30-minute pre-planned sessions. EBA runs two workstreams. Product: a fast PWA on the Acuity API (later store-wrapped), a dashboard built from the Acuity API, and a WhatsApp agent concept. Growth: the Mark Warner model taken to partners, Riviera Travel first; deck held until Browne confirms whether it went. The PWA is an internal target the client does not need to see yet, not a month-end deadline. The trade mark is Eazy's (EBA files once Browne confirms class and applicant).
+Equals Results: Browne Bailey's 9-studio North London PT group. Product: fast PWA on the Acuity API, dashboard from the API, WhatsApp agent concept. Growth: Mark Warner model for partners, Riviera first (deck held). PWA is an internal target, not a client deadline.
 
 ## Build
-- Next.js 15.5.9 on Vercel. Branch `claude/wizardly-volta-03o5or`, not merged to main. Deploy/preview state can't be checked from the repo.
-- **Skeleton, now in code**: login → my studio → my minutes (home) → book → buy. Per-studio Acuity keys (`ACUITY_*_<CODE>`); only MH may be written to, and only `POST /appointments`, enforced before any request. Buying is a link out to Acuity's hosted checkout. Login is a signed-cookie stand-in with an access code, refused on production.
-- Gate 0 page moved to `/gate0`; its API is unchanged.
-- 34 unit tests, typecheck and build pass. Never run against real Acuity: there are no keys in this environment.
-- Not built: real auth, service worker, icons, dashboard, WhatsApp agent, design.
+- Branch `claude/wizardly-volta-03o5or` (not on main). Vercel state unverifiable.
+- Skeleton in code: login → my studio → my minutes → book → buy. Per-studio keys; writes only on MH and only `POST /appointments`, enforced before any request; buying links to Acuity checkout; login is a preview-only access-code stand-in. Gate 0 page at `/gate0`.
+- 34 tests, typecheck, build pass. Never run against Acuity: no keys here.
+- Not built: real auth, service worker, icons, dashboard, design.
 
 ## Done since last sitrep
-- 25 Sept: agent roster, sitrep skill, CLAUDE.md, BRIEF copied into the repo; .gitignore added.
-- 25 Sept: skeleton built and reviewed (approved); two findings fixed (certificates must match the client's email exactly; production check fails closed).
-- HQ relay applied (see Decisions).
+- Roster, sitrep skill, CLAUDE.md, BRIEF in repo. Skeleton built, reviewed, two findings fixed. Relay applied.
 
 ## In flight
-- Nothing running. Next: QA on an MH preview, then real login.
+- Nothing running.
 
 ## Needs Eazy
-- **Preview env vars.** Recommend setting `SESSION_SECRET` and `SKELETON_ACCESS_CODE` on Vercel *Preview* only, and confirming `ACUITY_USER_ID`/`ACUITY_API_KEY` are Muswell Hill Road's (writes go wherever those keys point). Default: skeleton stays untested against Acuity.
-- **Real login.** Recommend Supabase Auth email magic link (Supabase Pro already in the BRIEF), with the email matched to Acuity clients. Default: build that next, on previews.
-- **Other 8 studios.** Recommend adding their keys only when you decide read access is fine; the app is read-only for them anyway. Default: not connected.
+- Set `SESSION_SECRET`, `SKELETON_ACCESS_CODE` on Vercel Preview; confirm `ACUITY_USER_ID/API_KEY` are MH's. Recommend yes. Default: untested.
+- Real login: recommend Supabase magic link. Default: build next.
+- Other 8 studios' keys (read-only): default not connected.
 
 ## Risks
-- Checkout link format (`catalog.php?action=addCart…`) not confirmed; check it against the MH admin's "Direct link".
-- Nothing in code checks that MH keys belong to MH; the Gate 0 API can still cancel bookings and delete certificates on that account. Recommend leaving `GATE0_SECRET` unset on app previews.
-- If Acuity's purchased certificates carry no email, minutes will show 0. Verify on MH.
-- Access-code login lets anyone with the code act as any email. Previews only.
-- 9-account fan-out, Acuity rate limits and cross-studio identity unproven.
-- Trade mark filed without clearance; "Equals Results" isn't a Companies House name.
+- Checkout URL format unconfirmed; MH-key ownership unchecked in code; Gate 0 API can delete certificates (leave `GATE0_SECRET` unset on previews).
+- Minutes show 0 if certificates lack email; verify on MH.
+- 9-account fan-out, rate limits, cross-studio identity unproven. Trade mark unscreened.
 
 ## Decisions
-- 2026-09-25 · Buying links out to Acuity's hosted checkout; the app never takes payment · BRIEF money rule.
-- 2026-09-25 · Writes allowed only on MH, only to create bookings, enforced in code · BRIEF test rule.
-- 2026-09-25 · Signed-cookie login with an access code on previews only, until real auth · no email/auth decision yet.
-- 2026-09-25 · Dashboard from Acuity API; Riviera deck held until Browne confirms; deck language becomes the design system; deck facts 20,000+ sessions/yr, MW origin as in deck, keep "MD" · CoS defaults after 48h.
-- 2026-09-23 · PWA is an internal target, all functionality bare-bones first, design later · Eazy.
-- 2026-09-23 · Trade mark: EBA files a series of three (Equals Results / =Results / = Results), class 41 + 9, 16 recommended; Browne confirms class and applicant Ltd · Eazy.
-- 2026-09-23 · Cash rule: receivables live in the EBA sitrep only; money figures removed from this doc · org rule.
-- 2026-09-23 · Sitrep header is four lines (updated/checked/state/next) · /sitrep v3.
+- 2026-09-25 · Buy = link to Acuity checkout; app takes no payment · BRIEF.
+- 2026-09-25 · Writes only on MH, bookings only, enforced in code · BRIEF.
+- 2026-09-25 · Preview-only access-code login until real auth · no auth decision yet.
+- 2026-09-25 · Dashboard from API; Riviera deck held for Browne; deck language = design system; 20,000+ sessions, MW story as deck, keep "MD" · CoS defaults.
+- 2026-09-23 · PWA internal target; functionality first, design later · Eazy.
+- 2026-09-23 · Trade mark: series of three, class 41 (+9, 16); Browne confirms class and applicant · Eazy.
+- 2026-09-23 · Cash rule: money lives in EBA sitrep only · org rule.
+- 2026-09-23 · Four-line sitrep header · /sitrep v3.
 - 2026-09-21 · EBA files the trade mark itself · cheap, urgent, gates pitches.
 - 2026-09-21 · Create a =Results design system · before branded screens.
 - 2026-09-21 · Next PWA step: unbranded skeleton, problem-solving only · flows before design.
