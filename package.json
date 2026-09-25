@@ -2,6 +2,9 @@
   "name": "acuity-gate0",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.117.2",
     "next": "15.5.9",
     "react": "19.1.1",
     "react-dom": "19.1.1"
