@@ -14,7 +14,7 @@ Equals Results: Browne Bailey's 9-studio PT group. Fast PWA on the Acuity API, d
 - PR #2 merged; magic-link login built and reviewed; relay applied.
 
 ## In flight
-- Magic-link PR, for Eazy to merge.
+- PR #3 (magic-link login), for Eazy to merge.
 
 ## Needs Eazy
 - Supabase for preview (README "Supabase setup"): Vercel Preview env vars, redirect URL, two email templates. Recommend yes. Default: access-code login.
