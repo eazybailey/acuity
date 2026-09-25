@@ -7,7 +7,7 @@ next: QA the skeleton on a Muswell Hill Road preview once preview env vars are s
 Equals Results: Browne Bailey's 9-studio North London PT group. Product: fast PWA on the Acuity API, dashboard from the API, WhatsApp agent concept. Growth: Mark Warner model for partners, Riviera first (deck held). PWA is an internal target, not a client deadline.
 
 ## Build
-- Branch `claude/wizardly-volta-03o5or`, open as PR #2 (not merged); Vercel preview deployed (Vercel-login protected).
+- Branch `claude/wizardly-volta-03o5or`, open as PR #2; Vercel preview deployed (Vercel-login protected).
 - Skeleton in code: login → my studio → my minutes → book → buy. Per-studio keys; writes only on MH and only `POST /appointments`, enforced before any request; buying links to Acuity checkout; login is a preview-only access-code stand-in. Gate 0 page at `/gate0`.
 - 34 tests, typecheck, build pass. Never run against Acuity: no keys here.
 - Not built: real auth, service worker, icons, dashboard, design.
