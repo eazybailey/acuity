@@ -13,16 +13,25 @@ export class AcuityError extends Error {
   }
 }
 
-function authHeader(): string {
-  const user = process.env.ACUITY_USER_ID;
-  const key = process.env.ACUITY_API_KEY;
+// Per-call credentials. When omitted, falls back to ACUITY_USER_ID / ACUITY_API_KEY
+// (the Gate 0 route relies on that). App code should go through studioClient() in
+// lib/studios.ts, which passes each studio's own keys and enforces the write guard.
+export interface AcuityCredentials {
+  userId: string;
+  apiKey: string;
+}
+
+export function authHeader(creds?: AcuityCredentials): string {
+  const user = creds ? creds.userId : process.env.ACUITY_USER_ID;
+  const key = creds ? creds.apiKey : process.env.ACUITY_API_KEY;
   if (!user || !key) {
     throw new Error("ACUITY_USER_ID / ACUITY_API_KEY are not set in the environment");
   }
   return "Basic " + Buffer.from(`${user}:${key}`).toString("base64");
 }
 
-type Query = Record<string, string | number | boolean | undefined>;
+export type Method = "GET" | "POST" | "PUT" | "DELETE";
+export type Query = Record<string, string | number | boolean | undefined>;
 
 function qs(query?: Query): string {
   if (!query) return "";
@@ -33,15 +42,15 @@ function qs(query?: Query): string {
 }
 
 export async function acuity<T = unknown>(
-  method: "GET" | "POST" | "PUT" | "DELETE",
+  method: Method,
   path: string,
-  opts: { query?: Query; body?: unknown } = {}
+  opts: { query?: Query; body?: unknown; credentials?: AcuityCredentials } = {}
 ): Promise<T> {
   const url = `${BASE}${path}${qs(opts.query)}`;
   const res = await fetch(url, {
     method,
     headers: {
-      Authorization: authHeader(),
+      Authorization: authHeader(opts.credentials),
       "Content-Type": "application/json",
       Accept: "application/json",
     },
@@ -96,4 +105,55 @@ export function acuityDatetime(d: Date, offsetMinutes = 0): string {
   const hh = String(Math.floor(abs / 60)).padStart(2, "0");
   const mm = String(abs % 60).padStart(2, "0");
   return `${iso}${sign}${hh}${mm}`;
+}
+
+export interface Client {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  [k: string]: unknown;
+}
+
+export interface AppointmentType {
+  id: number;
+  name: string;
+  duration: number;
+  price?: string;
+  active?: boolean;
+  category?: string;
+  calendarIDs?: number[];
+  [k: string]: unknown;
+}
+
+export interface Appointment {
+  id: number;
+  datetime: string;
+  type?: string;
+  appointmentTypeID?: number;
+  duration?: string | number;
+  calendar?: string;
+  certificate?: string | null;
+  [k: string]: unknown;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  price?: string;
+  description?: string;
+  type?: string;
+  minutes?: number;
+  appointmentTypeIDs?: number[];
+  hidden?: boolean;
+  [k: string]: unknown;
+}
+
+export interface AvailabilityDate {
+  date: string; // YYYY-MM-DD
+}
+
+export interface AvailabilityTime {
+  time: string; // ISO 8601 with offset, e.g. 2026-09-26T09:00:00+0100
+  slotsAvailable?: number;
 }
