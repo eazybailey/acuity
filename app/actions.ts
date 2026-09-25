@@ -5,9 +5,10 @@ import { redirect } from "next/navigation";
 import { AcuityError } from "@/lib/acuity";
 import { cookieOptions, requireStudio } from "@/lib/auth";
 import { findClient, getAppointmentTypes, getCertificates } from "@/lib/data";
+import { confirmMagicLink, sendMagicLink, supabaseMagicLink } from "@/lib/magiclink";
 import { bookableTypes, pickCertificate } from "@/lib/packages";
 import {
-  SESSION_COOKIE, SESSION_TTL_SECONDS, STUDIO_COOKIE, checkAccessCode, loginBlockedReason, looksLikeEmail,
+  SESSION_COOKIE, SESSION_TTL_SECONDS, STUDIO_COOKIE, appOrigin, authMode, checkAccessCode, looksLikeEmail,
   normaliseEmail, signSession,
 } from "@/lib/session";
 import { studioClient } from "@/lib/studios";
@@ -15,8 +16,31 @@ import { londonDate } from "@/lib/time";
 
 const field = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 
+// Magic-link mode: email the sign-in link. The session is minted in app/auth/confirm.
+export async function sendLoginLink(fd: FormData): Promise<void> {
+  if (authMode().mode !== "magic-link") redirect("/login");
+  const email = normaliseEmail(field(fd, "email"));
+  if (!looksLikeEmail(email)) redirect("/login?e=email");
+  redirect(await sendMagicLink(supabaseMagicLink(), email, appOrigin()!));
+}
+
+// Magic-link mode: the "Sign in" button on /auth/confirm. Only this POST spends the token.
+export async function confirmLogin(fd: FormData): Promise<void> {
+  if (authMode().mode !== "magic-link") redirect("/login?e=link");
+  const email = await confirmMagicLink(supabaseMagicLink(), fd.get("token_hash"), fd.get("type"));
+  if (!email) redirect("/login?e=link");
+  const jar = await cookies();
+  jar.set(SESSION_COOKIE, signSession(email, process.env.SESSION_SECRET!), {
+    ...cookieOptions,
+    maxAge: SESSION_TTL_SECONDS,
+  });
+  jar.delete(STUDIO_COOKIE);
+  redirect("/studio");
+}
+
+// Access-code mode (preview stand-in). Refused when magic link is configured.
 export async function login(fd: FormData): Promise<void> {
-  if (loginBlockedReason()) redirect("/login");
+  if (authMode().mode !== "access-code") redirect("/login");
   const email = normaliseEmail(field(fd, "email"));
   if (!looksLikeEmail(email)) redirect("/login?e=email");
   if (!checkAccessCode(field(fd, "code"), process.env.SKELETON_ACCESS_CODE)) redirect("/login?e=code");

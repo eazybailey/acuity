@@ -1,34 +1,34 @@
-updated: 2026-09-25T11:50Z
-checked: 2026-09-25T11:50Z
+updated: 2026-09-25T16:25Z
+checked: 2026-09-25T16:25Z
 state: waiting-on-eazy
-next: QA the skeleton on a Muswell Hill Road preview once preview env vars are set; meanwhile scaffold magic-link login.
+next: QA login → book on a Muswell Hill Road preview once Supabase and preview env vars are set.
 
 ## Big picture
-Equals Results: Browne Bailey's 9-studio North London PT group. Product: fast PWA on the Acuity API, dashboard from the API, WhatsApp agent concept. Growth: Mark Warner model for partners, Riviera first (deck held). PWA is an internal target, not a client deadline.
+Equals Results: Browne Bailey's 9-studio PT group. Fast PWA on the Acuity API, dashboard, WhatsApp concept; Riviera partner pitch held. PWA is an internal target.
 
 ## Build
-- Branch `claude/wizardly-volta-03o5or`, open as PR #2; Vercel preview deployed (Vercel-login protected).
-- Skeleton in code: login → my studio → my minutes → book → buy. Per-studio keys; writes only on MH and only `POST /appointments`, enforced before any request; buying links to Acuity checkout; login is a preview-only access-code stand-in. Gate 0 page at `/gate0`.
-- 34 tests, typecheck, build pass. Never run against Acuity: no keys here.
-- Not built: real auth, service worker, icons, dashboard, design.
+- Main: skeleton (PR #2 merged) — login → studio → minutes → book → buy; writes MH-only, bookings only; buy links to Acuity checkout.
+- Branch `claude/modest-thompson-3m80cm`: Supabase magic-link login (link opens a Sign-in button; mints our own session). Access code stays as fallback; production refused. 46 tests, build pass. Never run against Acuity or Supabase: no keys here.
 
 ## Done since last sitrep
-- Roster, sitrep skill, CLAUDE.md, BRIEF in repo. Skeleton built, reviewed, two findings fixed. Relay applied.
+- PR #2 merged; magic-link login built and reviewed; relay applied.
 
 ## In flight
-- None; PR #2 green.
+- PR #3 (magic-link login), for Eazy to merge.
 
 ## Needs Eazy
-- Set `SESSION_SECRET`, `SKELETON_ACCESS_CODE` on Vercel Preview; confirm `ACUITY_USER_ID/API_KEY` are MH's. Recommend yes. Default: untested.
-- Real login: recommend Supabase magic link. Default: build next.
-- Other 8 studios' keys (read-only): default not connected.
+- Supabase for preview (README "Supabase setup"): Vercel Preview env vars, redirect URL, two email templates. Recommend yes. Default: access-code login.
+- Custom SMTP (may cost): recommend before real clients. Default: built-in, team only.
+- Confirm preview Acuity keys are MH's. Default: untested.
 
 ## Risks
-- Checkout URL format unconfirmed; MH-key ownership unchecked in code; Gate 0 API can delete certificates (leave `GATE0_SECRET` unset on previews).
-- Minutes show 0 if certificates lack email; verify on MH.
-- 9-account fan-out, rate limits, cross-studio identity unproven.
+- Sandbox Supabase env vars of unknown project, deliberately unused.
+- Checkout URL format, certificate email, rate limits, cross-studio identity unproven.
 
 ## Decisions
+- 2026-09-25 · Trade mark proposal emailed to Browne; filing follows reply · Eazy (relay).
+- 2026-09-25 · Login = Supabase magic link, Sign-in button page · scanner-safe.
+- 2026-09-25 · Production sign-in refused until Eazy decides · lead default.
 - 2026-09-25 · Buy = link to Acuity checkout; app takes no payment · BRIEF.
 - 2026-09-25 · Writes only on MH, bookings only, enforced in code · BRIEF.
 - 2026-09-25 · Preview-only access-code login until real auth · no auth decision yet.

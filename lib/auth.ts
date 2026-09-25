@@ -1,4 +1,4 @@
-// Server-side session access for pages and actions. See lib/session.ts: preview-only stand-in.
+// Server-side session access for pages and actions. See lib/session.ts (both sign-in modes).
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";

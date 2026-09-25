@@ -1,13 +1,12 @@
-// PREVIEW-ONLY STAND-IN FOR REAL LOGIN.
+// Session cookie and sign-in mode. Pure functions only (no Next imports) so it can be unit-tested.
 //
-// Acuity has no client authentication, and how clients will prove who they are (probably an
-// email magic link via Supabase Auth) is an open decision for Eazy. Until that is built, this
-// file provides:
-//   - an HMAC-signed, expiring session token holding only the client's email;
-//   - a shared access code (SKELETON_ACCESS_CODE) so only testers can get in.
-// Anyone with the access code can sign in as ANY email, so this must never run in production:
-// loginBlockedReason() refuses logins when VERCEL_ENV === "production". Replace this whole
-// file when real auth lands. Pure functions only (no Next imports) so it can be unit-tested.
+// Acuity has no client authentication, so we keep our own session: an HMAC-signed, expiring
+// token holding only the client's email (`sess` cookie). Two ways to earn one, see authMode():
+//   - "magic-link" (real login): Supabase Auth emails a link; app/auth/confirm verifies it and
+//     mints the session with the verified email (lib/magiclink.ts). No Supabase session is kept.
+//   - "access-code" (preview-only stand-in): email + shared SKELETON_ACCESS_CODE. Anyone with the
+//     code can sign in as ANY email, so it is for testers only.
+// Both are refused on a production runtime (fail closed) until Eazy decides to lift that.
 
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
@@ -88,18 +87,43 @@ export function checkAccessCode(input: string, expected: string | undefined): bo
   return safeEqual(input, expected);
 }
 
-// Why login is refused right now, or null when it is allowed.
 // Fail closed: anything that looks like a production runtime is refused, not only Vercel's.
 export function isProductionRuntime(env: Env = process.env): boolean {
   if (env.VERCEL_ENV) return env.VERCEL_ENV === "production";
   return env.NODE_ENV === "production";
 }
 
-export function loginBlockedReason(env: Env = process.env): string | null {
-  if (isProductionRuntime(env)) {
-    return "Sign-in is not available: real authentication has not been built yet. This skeleton runs on preview deployments only.";
+// Absolute origin for links we email (never taken from the Host header), or null if unusable.
+export function appOrigin(env: Env = process.env): string | null {
+  try {
+    const u = new URL(env.APP_URL ?? "");
+    return u.protocol === "https:" || u.protocol === "http:" ? u.origin : null;
+  } catch {
+    return null;
   }
-  if (!env.SESSION_SECRET) return "Sign-in is not configured (SESSION_SECRET is not set).";
-  if (!env.SKELETON_ACCESS_CODE) return "Sign-in is not configured (SKELETON_ACCESS_CODE is not set).";
-  return null;
+}
+
+export type AuthMode = { mode: "magic-link" } | { mode: "access-code" } | { mode: "blocked"; reason: string };
+
+// Magic link wins when fully configured; the access code is the fallback.
+export function authMode(env: Env = process.env): AuthMode {
+  if (isProductionRuntime(env)) {
+    return {
+      mode: "blocked",
+      reason: "Sign-in is not available: it has not been built or approved for production yet. This app runs on preview deployments only.",
+    };
+  }
+  if (!env.SESSION_SECRET) return { mode: "blocked", reason: "Sign-in is not configured (SESSION_SECRET is not set)." };
+  if (env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY && appOrigin(env)) return { mode: "magic-link" };
+  if (env.SKELETON_ACCESS_CODE) return { mode: "access-code" };
+  return {
+    mode: "blocked",
+    reason: "Sign-in is not configured (set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY and APP_URL, or SKELETON_ACCESS_CODE).",
+  };
+}
+
+// Why login is refused right now, or null when it is allowed.
+export function loginBlockedReason(env: Env = process.env): string | null {
+  const m = authMode(env);
+  return m.mode === "blocked" ? m.reason : null;
 }
