@@ -64,6 +64,8 @@ export function allStudios(env: Env = process.env): Studio[] {
   return STUDIO_CODES.map((c) => getStudio(c, env));
 }
 
+export const READ_ONLY_MESSAGE = "Booking disabled on this studio during testing.";
+
 export class StudioWriteBlocked extends Error {}
 
 // The only writes the app is allowed to make.

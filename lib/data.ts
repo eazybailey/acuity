@@ -5,7 +5,7 @@ import type {
   Appointment, AppointmentType, AvailabilityDate, AvailabilityTime, Certificate, Client, Product,
 } from "./acuity";
 import { studioClient, type StudioCode } from "./studios";
-import { LONDON, londonDate } from "./time";
+import { LONDON, londonDate, nextMonth } from "./time";
 import { bookableTypes, totalMinutes } from "./packages";
 
 const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
@@ -59,3 +59,17 @@ export const getMinutes = cache(async (code: StudioCode, email: string) => {
   const [certs, types] = await Promise.all([getCertificates(code, email), getAppointmentTypes(code)]);
   return { certs, today, minutes: totalMinutes(certs, today), types: bookableTypes(types, certs, today) };
 });
+
+// Soonest few bookable start times for one type: this month's dates, then next month's.
+export async function nextSlots(code: StudioCode, appointmentTypeID: number, count = 3): Promise<AvailabilityTime[]> {
+  const today = londonDate();
+  const month = today.slice(0, 7);
+  let dates = (await getDates(code, appointmentTypeID, month)).filter((d) => d.date >= today);
+  if (dates.length === 0) dates = await getDates(code, appointmentTypeID, nextMonth(month));
+  const out: AvailabilityTime[] = [];
+  for (const d of dates.slice(0, 3)) {
+    out.push(...(await getTimes(code, appointmentTypeID, d.date)));
+    if (out.length >= count) break;
+  }
+  return out.slice(0, count);
+}
