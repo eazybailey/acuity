@@ -7,7 +7,7 @@ next: QA the skeleton on a Muswell Hill Road preview once preview env vars are s
 Equals Results: Browne Bailey's 9-studio North London PT group. Product: fast PWA on the Acuity API, dashboard from the API, WhatsApp agent concept. Growth: Mark Warner model for partners, Riviera first (deck held). PWA is an internal target, not a client deadline.
 
 ## Build
-- Branch `claude/wizardly-volta-03o5or`, open as PR #2 (not merged); Vercel preview deployed, behind Vercel login.
+- Branch `claude/wizardly-volta-03o5or`, open as PR #2 (not merged); Vercel preview deployed (Vercel-login protected).
 - Skeleton in code: login → my studio → my minutes → book → buy. Per-studio keys; writes only on MH and only `POST /appointments`, enforced before any request; buying links to Acuity checkout; login is a preview-only access-code stand-in. Gate 0 page at `/gate0`.
 - 34 tests, typecheck, build pass. Never run against Acuity: no keys here.
 - Not built: real auth, service worker, icons, dashboard, design.
@@ -16,7 +16,7 @@ Equals Results: Browne Bailey's 9-studio North London PT group. Product: fast PW
 - Roster, sitrep skill, CLAUDE.md, BRIEF in repo. Skeleton built, reviewed, two findings fixed. Relay applied.
 
 ## In flight
-- Nothing running.
+- None; PR #2 green.
 
 ## Needs Eazy
 - Set `SESSION_SECRET`, `SKELETON_ACCESS_CODE` on Vercel Preview; confirm `ACUITY_USER_ID/API_KEY` are MH's. Recommend yes. Default: untested.
@@ -26,7 +26,7 @@ Equals Results: Browne Bailey's 9-studio North London PT group. Product: fast PW
 ## Risks
 - Checkout URL format unconfirmed; MH-key ownership unchecked in code; Gate 0 API can delete certificates (leave `GATE0_SECRET` unset on previews).
 - Minutes show 0 if certificates lack email; verify on MH.
-- 9-account fan-out, rate limits, cross-studio identity unproven. Trade mark unscreened.
+- 9-account fan-out, rate limits, cross-studio identity unproven.
 
 ## Decisions
 - 2026-09-25 · Buy = link to Acuity checkout; app takes no payment · BRIEF.
