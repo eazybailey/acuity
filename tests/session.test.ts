@@ -52,6 +52,8 @@ describe("access code and login gate", () => {
     expect(loginBlockedReason(ok)).toBeNull();
     expect(loginBlockedReason({ ...ok, VERCEL_ENV: "preview" })).toBeNull();
     expect(loginBlockedReason({ ...ok, VERCEL_ENV: "production" })).toMatch(/not been built/);
+    expect(loginBlockedReason({ ...ok, NODE_ENV: "production" })).toMatch(/not been built/);
+    expect(loginBlockedReason({ ...ok, NODE_ENV: "production", VERCEL_ENV: "preview" })).toBeNull();
     expect(loginBlockedReason({ SKELETON_ACCESS_CODE: "c" })).toMatch(/SESSION_SECRET/);
     expect(loginBlockedReason({ SESSION_SECRET: "s" })).toMatch(/SKELETON_ACCESS_CODE/);
   });

@@ -24,7 +24,7 @@ export const findClient = cache(async (code: StudioCode, email: string): Promise
 export const getCertificates = cache(async (code: StudioCode, email: string): Promise<Certificate[]> =>
   arr<Certificate>(await studioClient(code).get("/certificates", { email }))
     // Defensive: only this client's certificates, whatever the API's matching does.
-    .filter((c) => !c.email || c.email.toLowerCase() === email.toLowerCase())
+    .filter((c) => typeof c.email === "string" && c.email.trim().toLowerCase() === email.trim().toLowerCase())
 );
 
 export const getUpcoming = cache(async (code: StudioCode, email: string): Promise<Appointment[]> =>

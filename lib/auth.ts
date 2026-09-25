@@ -2,11 +2,11 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { SESSION_COOKIE, STUDIO_COOKIE, verifySession, verifyStudio } from "./session";
+import { SESSION_COOKIE, STUDIO_COOKIE, isProductionRuntime, verifySession, verifyStudio } from "./session";
 import { getStudio, isStudioCode, type Studio } from "./studios";
 
 export async function getSessionEmail(): Promise<string | null> {
-  if (process.env.VERCEL_ENV === "production") return null;
+  if (isProductionRuntime()) return null;
   const jar = await cookies();
   const p = verifySession(jar.get(SESSION_COOKIE)?.value, process.env.SESSION_SECRET);
   return p?.email ?? null;

@@ -89,8 +89,14 @@ export function checkAccessCode(input: string, expected: string | undefined): bo
 }
 
 // Why login is refused right now, or null when it is allowed.
+// Fail closed: anything that looks like a production runtime is refused, not only Vercel's.
+export function isProductionRuntime(env: Env = process.env): boolean {
+  if (env.VERCEL_ENV) return env.VERCEL_ENV === "production";
+  return env.NODE_ENV === "production";
+}
+
 export function loginBlockedReason(env: Env = process.env): string | null {
-  if (env.VERCEL_ENV === "production") {
+  if (isProductionRuntime(env)) {
     return "Sign-in is not available: real authentication has not been built yet. This skeleton runs on preview deployments only.";
   }
   if (!env.SESSION_SECRET) return "Sign-in is not configured (SESSION_SECRET is not set).";
